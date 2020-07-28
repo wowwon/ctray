@@ -56,12 +56,14 @@
                  :vgap 5 :hgap 5 :border 5
                  :south bx
                  )
-            enter-action (seesaw.core/action :handler (fn[e](prn e) ))
-            clear-action (seesaw.core/action :handler (fn[e](prn e) ))
+            enter-action (seesaw.core/action :name "Enter" :handler (fn[e](prn e) ))
+            clear-action (seesaw.core/action :name "Clear" :handler (fn[e](prn e) ))
             ]
-            (do (seesaw.core/config! cf :content bp) 
+            (do 
                 (seesaw.core/config! enter :action enter-action)
                 (seesaw.core/config! clear :action clear-action)
+                (seesaw.core/config! cf :content bp) 
+                (.setSize cf 300 300)
                 cf
                 )
             )
