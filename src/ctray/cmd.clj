@@ -32,8 +32,6 @@
     (.toByteArray xout)))
 
 
-(require 'seesaw.core)
-(seesaw.core/config! f :content content)
 
 (defn init
    ([] (init "SC"  ))
@@ -58,68 +56,18 @@
                  :vgap 5 :hgap 5 :border 5
                  :south bx
                  )
-            enter-action (seesaw.core/action :id :enter-action :handler (fn[e](prn e) ))
-            clear-action (seesaw.core/action :id :clear-action :handler (fn[e](prn e) ))
+            enter-action (seesaw.core/action :handler (fn[e](prn e) ))
+            clear-action (seesaw.core/action :handler (fn[e](prn e) ))
             ]
-            (do (seesaw.core/config! cf :content bp))
+            (do (seesaw.core/config! cf :content bp) 
+                (seesaw.core/config! enter :action enter-action)
+                (seesaw.core/config! clear :action clear-action)
+                cf
+                )
             )
      )
 )
-(def watchflg (atom true))
-(defn make-console[] (
-                      let [pb (new ProcessBuilder []) 
-                           scp (:Textarea )
-                           textArea  = new JTextArea();
-                           textField = new JTextField("");
-                           enterbtn  = new JButton("Enter");
-                               Box box = Box.createHorizontalBox();
-    box.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-    box.add(Box.createHorizontalGlue());
-    box.add(textField);
-    box.add(Box.createHorizontalStrut(5));
-    box.add(enterbtn);
-    box.add(Box.createHorizontalStrut(5));
-    box.add(button);
 
-    add(new JScrollPane(textArea));
-    add(box, BorderLayout.SOUTH);
-    
-                           pwatch 
-                      
-                      
-                      
-                      
-                                                       ] (
-                      )))
- 
-(defn init[] (do
-                 (swap! *runtime-state assoc
-                      :prefs (.node (Preferences/userRoot) "ctray"))
-                 (swap! *runtime-state assoc :tray (SystemTray/getSystemTray))
-                 (let [image    (ImageIO/read (new File "./resources/TrayIcon.png" ))
-                       exit_act (reify ActionListener(actionPerformed [this e](do (prn e) (System/exit 0) ) ) )  
-                       popup_menu ( new PopupMenu)
-                       defaultItem ( new MenuItem "EXIT" )
-                       trayIcon ( new TrayIcon image  "LeinRepl" popup_menu)
-                        ]
-                              (do (swap! *runtime-state assoc :popup_menu popup_menu)
-                                  (.add popup_menu defaultItem)
-                                  ;(.addActionListener trayIcon exit_act)
-                                  (.addActionListener defaultItem exit_act)
-                                  (.add (@*runtime-state :tray) trayIcon)
-                                  (swap! *runtime-state assoc :trayIcon trayIcon)
-                                  (swap! *runtime-state assoc :exit_act exit_act)
-                              )
-                   )
-                 ))
-
-(defn initConsole[titlename](let [  titlestr (if keyword? (name titlename) titlename )
-                                    titlekey (if keyword?  titlename (keyword titlename))
-                                    menu_iem ( new MenuItem titlestr )
-                                 ]
-                             (prn :exit)
-                            )
-)
 
 (defn foo
   "I don't do a whole lot."
