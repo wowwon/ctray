@@ -47,12 +47,8 @@
 
 (defonce *pref-state (atom {}))
 
-(defonce *runtime-state (atom {:web-port nil
-                               :projects {}
-                               :bridges {}
-                               :processes {}
-                               :stage nil
-                               :prefs nil}))
+(defonce *runtime-state (atom {
+                                ))
 
 (defn init-pref-state! [defaults]
   (->> defaults
