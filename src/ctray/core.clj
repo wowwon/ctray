@@ -18,18 +18,18 @@
 
 (defn str->img [str](ImageIO/read (new File str)))
 
-(defn make-tray ([](
+(defn make-tray ([]( do 
                  (let [tray (@*runtime-state :tray) ](if (nil?  (@*runtime-state :tray ) )
                                                            (swap! *runtime-state assoc :tray (SystemTray/getSystemTray))) ) ; if nil
                  (@*runtime-state :tray)
                    ))
-                ([tray-icon](.add make-tray tray-icon )))
+                ([tray-icon](doto (@*runtime-state :tray) (.add tray-icon) )))
 
 
 (defn make-tray-menu ([](make-tray-menu (str->img  "./resources/TrayIcon.png")))
                      ([image](let [
                                    popup-menu ( new PopupMenu)
-                                   tray-icon ( new TrayIcon image  "tryIcon" popup-menu)
+                                   tray-icon ( new TrayIcon image  "trayIcon" popup-menu)
                                     ]
                                         (do (swap! *runtime-state assoc :popup-menu popup-menu)
                                             (swap! *runtime-state assoc :tray-icon  tray-icon )
@@ -49,6 +49,7 @@
                        popup-icon    (make-tray-menu)
                         ]
                               (do (.add popup-icon default-item)
+                                  (.add tray  (@*runtime-state :tray-icon))
                               )
                    )
                 ))
