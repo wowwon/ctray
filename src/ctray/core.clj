@@ -11,11 +11,11 @@
           [javax.imageio ImageIO]
           [java.util.prefs Preferences] )
     (:gen-class))
-    
+
 (defn tray-supported?
   []
   (. SystemTray isSupported))
-  
+
 (defn str->img [str](ImageIO/read (new File str)))
 
 (defn make-tray ([](
@@ -24,7 +24,7 @@
                  (@*runtime-state :tray)
                    ))
                 ([tray-icon](.add make-tray tray-icon )))
-               
+
 
 (defn make-tray-menu ([](make-tray-menu (str->img  "./resources/TrayIcon.png")))
                      ([image](let [

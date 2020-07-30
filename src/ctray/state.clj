@@ -47,7 +47,7 @@
 
 (defonce *pref-state (atom {}))
 
-(defonce *runtime-state (atom {
+(defonce *runtime-state (atom {}
                                 ))
 
 (defn init-pref-state! [defaults]
