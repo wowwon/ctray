@@ -54,26 +54,6 @@
                    )
                 ))
 
-(defn init*[] (do
-                 (swap! *runtime-state assoc
-                      :prefs (.node (Preferences/userRoot) "ctray"))
-                 (swap! *runtime-state assoc :tray (SystemTray/getSystemTray))
-                 (let [image    (ImageIO/read (new File "./resources/TrayIcon.png" ))
-                       exit-act (reify ActionListener(actionPerformed [this e](do (prn e) (System/exit 0) ) ) )
-                       popup-menu ( new PopupMenu)
-                       default-item ( new MenuItem "EXIT" )
-                       tray-icon ( new TrayIcon image  "LeinRepl" popup-menu)
-                        ]
-                              (do (swap! *runtime-state assoc :popup-menu popup-menu)
-                                  (.add popup-menu default-item)
-                                  ;(.addActionListener tray-icon exit-act)
-                                  (.addActionListener default-item exit-act)
-                                  (.add (@*runtime-state :tray) tray-icon)
-                                  (swap! *runtime-state assoc :tray-icon tray-icon)
-                                  (swap! *runtime-state assoc :exit-act exit-act)
-                              )
-                   )
-                 ))
 
 (defn initConsole[titlename](let [  titlestr (if keyword? (name titlename) titlename )
                                     titlekey (if keyword?  titlename (keyword titlename))
