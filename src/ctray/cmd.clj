@@ -3,22 +3,7 @@
            [seesaw.core])
  (:import [javax.swing Box]
           [javax.swing BorderFactory]
-          
-          [java.awt AWTException]
-          [java.awt Image]
-          [java.awt MenuItem]
-          [java.awt PopupMenu]
-          [java.awt SystemTray]
-          [java.awt TrayIcon]
-          [java.awt.event ActionEvent]
-          [java.awt.event ActionListener]
-          [java.awt.image BufferedImage]
-          [java.io File]
-          [java.io IOException]
-          [java.util ArrayList]
-          [javax.imageio ImageIO]
-          [javax.swing Box]
-          [java.util.prefs Preferences] )
+           )
     (:gen-class))
 
 
@@ -54,7 +39,7 @@
                  :south bx
                  )
             enter-action (seesaw.core/action :name "Enter" :handler (fn[e](prn e) ))
-            clear-action (seesaw.core/action :name "Clear" :handler (fn[e](config! (select cf [:#commandinput] ) :text "")  ))
+            clear-action (seesaw.core/action :name "Clear" :handler (fn[e](seesaw.core/config! (seesaw.core/select bp [:#commandinput] ) :text "")  ))
             ]
             (do 
                 (seesaw.core/config! enter :action enter-action)
@@ -65,7 +50,8 @@
      )
 )
 
-(defn showscp   ([bp ] (showscp "SC"  ))
+(defn showscp   ([] (showscp (scpanel) "SC"  ))
+                ([bp] (showscp "SC"  ))
                 ([bp title]
                  ( let [ cf     (seesaw.core/frame :title title)
                          scpanel(scpanel)
@@ -104,7 +90,7 @@
                  :south bx
                  )
             enter-action (seesaw.core/action :name "Enter" :handler (fn[e](prn e) ))
-            clear-action (seesaw.core/action :name "Clear" :handler (fn[e](config! (select cf [:#commandinput] ) :text "")  ))
+            clear-action (seesaw.core/action :name "Clear" :handler (fn[e](seesaw.core/config! (seesaw.core/select bp [:#commandinput] ) :text "")  ))
             ]
             (do 
                 (seesaw.core/config! enter :action enter-action)
