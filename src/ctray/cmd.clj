@@ -1,13 +1,15 @@
 (ns ctray.cmd
- (:require [ctray.state :refer [*pref-state *runtime-state init-pref-state!]]
-           [seesaw.core])
+  (:require [ctray.state :refer [*pref-state *runtime-state init-pref-state!]]
+           [clojure.java.io :as io]
+           [clojure.core.async]
+           [seesaw.core]
+           )
  (:import [javax.swing Box]
           [javax.swing BorderFactory]
            )
     (:gen-class))
 
 
-(require '(clojure.java [io :as io]))
 
 ;; A common task it to load a file into a byte array.
 (defn file->bytes [file]
@@ -16,7 +18,7 @@
     (io/copy xin xout)
     (.toByteArray xout)))
 
-
+;(clojure.java.shell/sh "cmd" "/c" "dir" :out-enc  "sjis") 
 (defn scpanel
    ( []
      ( let [ ta     (seesaw.core/text :id :commandinput  :multi-line? true    )
@@ -32,22 +34,21 @@
                           (.add (Box/createHorizontalStrut 5))
                           (.add clear)
                          )
-             bp  (seesaw.core/border-panel 
-                 ;:north (horizontal-panel :items rbs)
+             bp  (seesaw.core/border-panel :id :command-panel
                  :center ta
                  :vgap 5 :hgap 5 :border 5
                  :south bx
                  )
             enter-action (seesaw.core/action :name "Enter" :handler (fn[e](prn e) ))
-            clear-action (seesaw.core/action :name "Clear" :handler (fn[e](seesaw.core/config! (seesaw.core/select bp [:#commandinput] ) :text "")  ))
+            clear-action (seesaw.core/action :name "Clear" :handler (fn[e]( seesaw.core/config! tf :text "")  ))
             ]
             (do 
                 (seesaw.core/config! enter :action enter-action)
                 (seesaw.core/config! clear :action clear-action)
                 bp
-                )
             )
-     )
+      )
+    )
 )
 
 (defn showscp   ([] (showscp (scpanel) "SC"  ))
@@ -65,6 +66,36 @@
                 )
 )
 
+
+(defn cmd-frame-map
+   ( [] cmd-frame-map "cmd-frame")
+   ( [title] 
+     
+     ( let [ cframe (seesaw.core/frame :title title)
+             flag (atom true)
+             pb (doto (ProcessBuilder.  [] )  (.redirectErrorStream  false) (.command  ["cmd"]))
+             pi (.start pb)
+             rdr (clojure.java.io/reader (.getInputStream  pi ))
+             wrr (do (clojure.core.async/go-loop [rdr rdr] (do (prn (.readLine rdr "SJIS"))(if (seesaw.core/config sf :visible? ) (recur rdr)) ) ) 
+                     (clojure.java.io/writer (.getOutputStream pi )))
+             
+             cpanel (scpanel)
+             ta     (seesaw.core/select cpanel [:#commandinput] )
+             tf     (seesaw.core/select cpanel [:#commandoutput] )
+             enter  (seesaw.core/select cpanel [:#enter] )
+             clear  (seesaw.core/select cpanel [:#clear] )
+             enter-action (seesaw.core/action :name "Enter" :handler (fn[e](prn e) ))
+             clear-action (seesaw.core/action :name "Clear" :handler (fn[e](seesaw.core/config! (seesaw.core/select cpanel [:#commandinput] ) :text "")  ))
+             
+            ]
+            (do 
+                (seesaw.core/config! enter :action enter-action)
+                (seesaw.core/config! clear :action clear-action)
+                bp
+                )
+            )
+     )
+)
 
 (defn- initcf
    ([] (initcf "SC"  ))
