@@ -23,6 +23,7 @@
    ( []
      ( let [ ta     (seesaw.core/text :id :commandinput  :multi-line? true    )
              tf     (seesaw.core/text :id :commandoutput :multi-line? false   )
+             sp     (seesaw.core/scrollable ta :id :scroll )
              enter  (seesaw.core/button :id :enter :text "Enter")
              clear  (seesaw.core/button :id :clear :text "Clear")
              bx     (doto (Box/createHorizontalBox)
@@ -35,7 +36,7 @@
                           (.add clear)
                          )
              bp  (seesaw.core/border-panel :id :command-panel
-                 :center ta
+                 :center sp
                  :vgap 5 :hgap 5 :border 5
                  :south bx
                  )
@@ -68,7 +69,7 @@
 
 
 (defn cmd-frame-map
-   ( [] cmd-frame-map "cmd-frame")
+   ( [] (cmd-frame-map "cmd-frame"))
    ( [title] 
      ( let [ cframe (seesaw.core/frame :title title)
              cpanel (scpanel)
@@ -79,20 +80,32 @@
              
              pb (doto (ProcessBuilder.  [] )  (.redirectErrorStream  false) (.command  ["cmd"]))
              pi (.start pb)
-             rdr (doto (clojure.java.io/reader (.getInputStream  pi ))
-                       (#(clojure.core.async/go-loop [rdr %] (do (.appane ta (.readLine rdr "SJIS"))(if (seesaw.core/config cframe :visible? ) (recur rdr)) ) ))
+             rdr (doto (clojure.java.io/reader (.getInputStream  pi ) :encoding "SJIS" )
+                       (prn)
+                       (#(clojure.core.async/go-loop [rdr %] (do (.append ta (.readLine rdr))(.append ta "\r\n") (.setCaretPosition ta (.getLength (.getDocument ta) )) (if true  (do (recur rdr))) ) ))
                  )
-             wrr (clojure.java.io/writer (.getOutputStream pi ))
-             
-             enter-action (seesaw.core/action :name "Enter" :handler (fn[e](prn e) ))
-             clear-action (seesaw.core/action :name "Clear" :handler (fn[e](seesaw.core/config! (seesaw.core/select cpanel [:#commandinput] ) :text "")  ))
-             
+             wrr (clojure.java.io/writer (.getOutputStream pi ) :encoding "SJIS")
+             enter-action (seesaw.core/action :name "Enter" :handler (fn[e](do 
+                                                                                 (.write wrr (seesaw.core/config tf :text ) )   
+                                                                                 (.write wrr "\r\n" )
+                                                                                 (.flush wrr)
+                                                                                 (seesaw.core/config! tf :text "") ) ))
+             clear-action (seesaw.core/action :name "Clear" :handler (fn[e] (do 
+                                                                             (seesaw.core/config! ta :text "")  
+                                                                             (seesaw.core/config! tf :text "") 
+                                                                            )
+                                                                     )
+                           )
              
             ]
             (do 
+                (seesaw.core/config! ta :editable? false)
+                (seesaw.core/config! tf :action enter-action)
                 (seesaw.core/config! enter :action enter-action)
                 (seesaw.core/config! clear :action clear-action)
-                cpanel
+                (seesaw.core/config! cframe :content cpanel) 
+                (.setSize cframe 300 300)
+                cframe
                 )
             )
      )
