@@ -69,9 +69,10 @@
 
 
 (defn cmd-frame-map
-   ( [] (cmd-frame-map "cmd-frame"))
-   ( [title] 
-     ( let [ cframe (seesaw.core/frame :title title)
+   ( [] (cmd-frame-map {:title "cmd-frame", :encoding "SJIS" }))
+   ( [args] 
+     ( let [ aflag  (atom true)
+             cframe (seesaw.core/frame :title (:title args)  )
              cpanel (scpanel)
              ta     (seesaw.core/select cpanel [:#commandinput] )
              tf     (seesaw.core/select cpanel [:#commandoutput] )
@@ -80,9 +81,12 @@
              
              pb (doto (ProcessBuilder.  [] )  (.redirectErrorStream  false) (.command  ["cmd"]))
              pi (.start pb)
-             rdr (doto (clojure.java.io/reader (.getInputStream  pi ) :encoding "SJIS" )
+             rdr (doto (clojure.java.io/reader (.getInputStream  pi ) args )
                        (prn)
-                       (#(clojure.core.async/go-loop [rdr %] (do (.append ta (.readLine rdr))(.append ta "\r\n") (.setCaretPosition ta (.getLength (.getDocument ta) )) (if true  (do (recur rdr))) ) ))
+                       (#(clojure.core.async/go-loop [rdr %] (do (.append ta (.readLine rdr))
+                                                                 (.append ta "\r\n")
+                                                                 (.setCaretPosition ta (.getLength (.getDocument ta) )) 
+                                                                 (if @aflag  (do (recur rdr))) ) ))
                  )
              wrr (clojure.java.io/writer (.getOutputStream pi ) :encoding "SJIS")
              enter-action (seesaw.core/action :name "Enter" :handler (fn[e](do 
@@ -97,6 +101,7 @@
                                                                      )
                            )
              
+             
             ]
             (do 
                 (seesaw.core/config! ta :editable? false)
@@ -104,6 +109,7 @@
                 (seesaw.core/config! enter :action enter-action)
                 (seesaw.core/config! clear :action clear-action)
                 (seesaw.core/config! cframe :content cpanel) 
+                (listen cframe :window-closed (fn [e] (reset! aflag false)))
                 (.setSize cframe 300 300)
                 cframe
                 )
