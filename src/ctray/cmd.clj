@@ -70,28 +70,29 @@
 (defn cmd-frame-map
    ( [] cmd-frame-map "cmd-frame")
    ( [title] 
-     
      ( let [ cframe (seesaw.core/frame :title title)
-             flag (atom true)
-             pb (doto (ProcessBuilder.  [] )  (.redirectErrorStream  false) (.command  ["cmd"]))
-             pi (.start pb)
-             rdr (clojure.java.io/reader (.getInputStream  pi ))
-             wrr (do (clojure.core.async/go-loop [rdr rdr] (do (prn (.readLine rdr "SJIS"))(if (seesaw.core/config sf :visible? ) (recur rdr)) ) ) 
-                     (clojure.java.io/writer (.getOutputStream pi )))
-             
              cpanel (scpanel)
              ta     (seesaw.core/select cpanel [:#commandinput] )
              tf     (seesaw.core/select cpanel [:#commandoutput] )
              enter  (seesaw.core/select cpanel [:#enter] )
              clear  (seesaw.core/select cpanel [:#clear] )
+             
+             pb (doto (ProcessBuilder.  [] )  (.redirectErrorStream  false) (.command  ["cmd"]))
+             pi (.start pb)
+             rdr (doto (clojure.java.io/reader (.getInputStream  pi ))
+                       (#(clojure.core.async/go-loop [rdr %] (do (.appane ta (.readLine rdr "SJIS"))(if (seesaw.core/config cframe :visible? ) (recur rdr)) ) ))
+                 )
+             wrr (clojure.java.io/writer (.getOutputStream pi ))
+             
              enter-action (seesaw.core/action :name "Enter" :handler (fn[e](prn e) ))
              clear-action (seesaw.core/action :name "Clear" :handler (fn[e](seesaw.core/config! (seesaw.core/select cpanel [:#commandinput] ) :text "")  ))
+             
              
             ]
             (do 
                 (seesaw.core/config! enter :action enter-action)
                 (seesaw.core/config! clear :action clear-action)
-                bp
+                cpanel
                 )
             )
      )
